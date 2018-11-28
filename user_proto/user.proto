@@ -1,0 +1,42 @@
+syntax = "proto3";
+
+// protoc --go_out=plugins=grpc:. *.proto
+
+package user_proto;
+
+message ManyUsersOptions {
+  int64 page = 1;
+  string OrderBy = 2;
+}
+
+message OneUserOptions {
+  map<string, bool> fields = 1;
+}
+
+message UserID {
+  int64 ID = 1;
+}
+message UserEmail {
+  string Email = 1;
+}
+
+message User {
+  int64 ID = 1;
+  string Email = 2;
+  string Username = 3;
+  string FirstName = 4;
+  string LastName = 5;
+  string Avatar = 6;
+  int64 TotalScore = 7;
+  int64 TotalGames = 8;
+  string Password = 9;
+}
+
+service UserChecker {
+    rpc GetOne (UserID) returns (User) {}
+    rpc GetOneByEmail (UserEmail) returns (User) {}
+    rpc GetMany (ManyUsersOptions) returns (stream User) {}
+    rpc Create (User) returns (UserID) {}
+    rpc Update (User) returns (UserID) {}
+}
+
