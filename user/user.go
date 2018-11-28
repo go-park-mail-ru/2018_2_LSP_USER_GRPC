@@ -35,7 +35,7 @@ func NewUserManager(db *sql.DB, logger *zap.SugaredLogger) *UserManager {
 func (sm *UserManager) GetOne(ctx context.Context, in *user_proto.UserID) (*user_proto.User, error) {
 	rows, err := sm.db.Query("SELECT id, username, email, firstname, lastname, avatar, totalgames, totalscore, password FROM users WHERE id = $1", in.ID)
 	if err != nil {
-		sm.logger.Fatalw("Internal error",
+		sm.logger.Errorw("Internal error",
 			"err", err,
 		)
 		return nil, grpc.Errorf(codes.Internal, "Internal server error")
@@ -50,7 +50,7 @@ func (sm *UserManager) GetOne(ctx context.Context, in *user_proto.UserID) (*user
 	Avatar := sql.NullString{}
 	err = rows.Scan(&u.ID, &u.Username, &u.Email, &FirstName, &LastName, &Avatar, &u.TotalGames, &u.TotalScore, &u.Password)
 	if err != nil {
-		sm.logger.Fatalw("Internal error",
+		sm.logger.Errorw("Internal error",
 			"err", err,
 		)
 		return nil, grpc.Errorf(codes.Internal, "Internal server error")
@@ -70,7 +70,7 @@ func (sm *UserManager) GetOne(ctx context.Context, in *user_proto.UserID) (*user
 func (sm *UserManager) GetOneByEmail(ctx context.Context, in *user_proto.UserEmail) (*user_proto.User, error) {
 	rows, err := sm.db.Query("SELECT id, username, email, firstname, lastname, avatar, totalgames, totalscore, password FROM users WHERE email = $1", in.Email)
 	if err != nil {
-		sm.logger.Fatalw("Internal error",
+		sm.logger.Errorw("Internal error",
 			"err", err,
 		)
 		return nil, grpc.Errorf(codes.Internal, "Internal server error")
@@ -85,7 +85,7 @@ func (sm *UserManager) GetOneByEmail(ctx context.Context, in *user_proto.UserEma
 	Avatar := sql.NullString{}
 	err = rows.Scan(&u.ID, &u.Username, &u.Email, &FirstName, &LastName, &Avatar, &u.TotalGames, &u.TotalScore, &u.Password)
 	if err != nil {
-		sm.logger.Fatalw("Internal error",
+		sm.logger.Errorw("Internal error",
 			"err", err,
 		)
 		return nil, grpc.Errorf(codes.Internal, "Internal server error")
@@ -105,7 +105,7 @@ func (sm *UserManager) GetOneByEmail(ctx context.Context, in *user_proto.UserEma
 func (sm *UserManager) GetMany(in *user_proto.ManyUsersOptions, stream user_proto.UserChecker_GetManyServer) error {
 	rows, err := sm.db.Query("SELECT id, username, email, firstname, lastname, avatar, totalgames, totalscore FROM users ORDER BY "+in.OrderBy+" DESC LIMIT 10 OFFSET $1", in.Page*10)
 	if err != nil {
-		sm.logger.Fatalw("Internal error",
+		sm.logger.Errorw("Internal error",
 			"err", err,
 		)
 		return grpc.Errorf(codes.Internal, err.Error())
@@ -119,7 +119,7 @@ func (sm *UserManager) GetMany(in *user_proto.ManyUsersOptions, stream user_prot
 		Avatar := sql.NullString{}
 		err = rows.Scan(&u.ID, &u.Username, &u.Email, &FirstName, &LastName, &Avatar, &u.TotalGames, &u.TotalScore)
 		if err != nil {
-			sm.logger.Fatalw("Internal error",
+			sm.logger.Errorw("Internal error",
 				"err", err,
 			)
 			return grpc.Errorf(codes.Internal, err.Error())
@@ -135,7 +135,7 @@ func (sm *UserManager) GetMany(in *user_proto.ManyUsersOptions, stream user_prot
 		}
 		err = stream.Send(&u)
 		if err != nil {
-			sm.logger.Fatalw("Internal error",
+			sm.logger.Errorw("Internal error",
 				"err", err,
 			)
 			return grpc.Errorf(codes.Internal, err.Error())
@@ -153,7 +153,7 @@ func (sm *UserManager) Create(ctx context.Context, in *user_proto.User) (*user_p
 
 	hashed, err := hashPassword(in.Password)
 	if err != nil {
-		sm.logger.Fatalw("Internal error",
+		sm.logger.Errorw("Internal error",
 			"err", err,
 		)
 		return nil, grpc.Errorf(codes.Internal, "Internal server error")
@@ -161,7 +161,7 @@ func (sm *UserManager) Create(ctx context.Context, in *user_proto.User) (*user_p
 
 	rows, err := sm.db.Query("INSERT INTO users (firstname, lastname, email, password, username) VALUES ($1, $2, $3, $4, $5) RETURNING id;", in.FirstName, in.LastName, in.Email, hashed, in.Username)
 	if err != nil {
-		sm.logger.Fatalw("Internal error",
+		sm.logger.Errorw("Internal error",
 			"err", err,
 		)
 		return nil, grpc.Errorf(codes.Internal, "Internal server error")
@@ -173,7 +173,7 @@ func (sm *UserManager) Create(ctx context.Context, in *user_proto.User) (*user_p
 	rows.Next()
 	err = rows.Scan(&u.ID)
 	if err != nil {
-		sm.logger.Fatalw("Internal error",
+		sm.logger.Errorw("Internal error",
 			"err", err,
 		)
 		return nil, grpc.Errorf(codes.Internal, "Internal server error")
@@ -207,7 +207,7 @@ func (sm *UserManager) Update(ctx context.Context, in *user_proto.User) (*user_p
 	if len(in.Password) > 0 {
 		hashed, err := hashPassword(in.Password)
 		if err != nil {
-			sm.logger.Fatalw("Internal error",
+			sm.logger.Errorw("Internal error",
 				"err", err,
 			)
 			return nil, grpc.Errorf(codes.Internal, "Internal server error")
@@ -223,7 +223,7 @@ func (sm *UserManager) Update(ctx context.Context, in *user_proto.User) (*user_p
 
 	rows, err := sm.db.Query(request, in.ID)
 	if err != nil {
-		sm.logger.Fatalw("Internal error",
+		sm.logger.Errorw("Internal error",
 			"err", err,
 		)
 		return nil, grpc.Errorf(codes.Internal, "Internal server error")
@@ -236,7 +236,7 @@ func (sm *UserManager) Update(ctx context.Context, in *user_proto.User) (*user_p
 	}
 	err = rows.Scan(&u.ID)
 	if err != nil {
-		sm.logger.Fatalw("Internal error",
+		sm.logger.Errorw("Internal error",
 			"err", err,
 		)
 		return nil, grpc.Errorf(codes.Internal, "Internal server error")
@@ -248,7 +248,7 @@ func (sm *UserManager) Update(ctx context.Context, in *user_proto.User) (*user_p
 func (sm *UserManager) validateRegisterUnique(u *user_proto.User) error {
 	rows, err := sm.db.Query("SELECT EXISTS (SELECT * FROM users WHERE email = $1 LIMIT 1) AS email, EXISTS (SELECT * FROM users WHERE username = $2 LIMIT 1) AS username", u.Email, u.Username)
 	if err != nil {
-		sm.logger.Fatalw("Internal error",
+		sm.logger.Errorw("Internal error",
 			"err", err,
 		)
 		return grpc.Errorf(codes.Internal, "Internal server error")
@@ -256,7 +256,7 @@ func (sm *UserManager) validateRegisterUnique(u *user_proto.User) error {
 	defer rows.Close()
 
 	if !rows.Next() {
-		sm.logger.Fatalw("Internal error",
+		sm.logger.Errorw("Internal error",
 			"err", err,
 		)
 		return grpc.Errorf(codes.Internal, "Internal server error")
@@ -265,7 +265,7 @@ func (sm *UserManager) validateRegisterUnique(u *user_proto.User) error {
 	emailTaken, usernameTaken := false, false
 	err = rows.Scan(&emailTaken, &usernameTaken)
 	if err != nil {
-		sm.logger.Fatalw("Internal error",
+		sm.logger.Errorw("Internal error",
 			"err", err,
 		)
 		return grpc.Errorf(codes.Internal, "Internal server error")

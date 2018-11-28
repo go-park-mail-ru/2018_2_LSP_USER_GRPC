@@ -38,7 +38,7 @@ func main() {
 	)
 	lis, err := net.Listen("tcp", ":8080")
 	if err != nil {
-		sugar.Fatalw("Can't create server",
+		sugar.Errorw("Can't create server",
 			"port", 8080,
 		)
 		return
