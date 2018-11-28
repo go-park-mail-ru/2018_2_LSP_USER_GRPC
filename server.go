@@ -16,7 +16,7 @@ import (
 func main() {
 	logger, err := zap.NewProduction()
 	if err != nil {
-		fmt.Println("Can't create logger")
+		fmt.Println("Can't create logger", err)
 		return
 	}
 	defer logger.Sync()
