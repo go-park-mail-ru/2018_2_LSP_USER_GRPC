@@ -11,7 +11,7 @@ after_success:
   build -t user-grpc-server ~/server/user-grpc 
 - sshpass -p $SSH_PASS ssh -o StrictHostKeyChecking=no $SSH_USER@$SSH_HOST docker stop user-grpc 
 - sshpass -p $SSH_PASS ssh -o StrictHostKeyChecking=no $SSH_USER@$SSH_HOST docker 
-  run -e "DB_HOST=postgres" -e "DB_USER=$DB_USER" -e "JWT_TOKEN=$JWT_TOKEN" -e "DB_PASS=$DB_PASS"
+  run -e "DB_HOST=postgres" -e "DB_USER=$DB_USER" -e "DB_PASS=$DB_PASS"
   -e "DB_DB=$DB_DB" -d --link postgres:postgres --name user-grpc --rm --publish 32001:8080
   user-grpc-server
 env:
