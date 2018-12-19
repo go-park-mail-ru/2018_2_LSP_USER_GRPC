@@ -36,12 +36,16 @@ func main() {
 	sugar.Infow("Starting server",
 		"port", 8080,
 	)
-	lis, err := net.Listen("tcp", ":8080")
+	lis, err := net.Listen("tcp", ":8080") // nolint: gosec
 	if err != nil {
 		sugar.Errorw("Can't create server",
 			"port", 8080,
 		)
 		return
 	}
-	server.Serve(lis)
+	if err := server.Serve(lis); err != nil {
+		sugar.Fatalw("Can't start server",
+			"error", err,
+		)
+	}
 }

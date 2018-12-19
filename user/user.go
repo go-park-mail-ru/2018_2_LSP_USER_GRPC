@@ -2,6 +2,7 @@ package user
 
 import (
 	"database/sql"
+	"fmt"
 
 	"github.com/go-park-mail-ru/2018_2_LSP_USER_GRPC/user_proto"
 	"go.uber.org/zap"
@@ -103,7 +104,7 @@ func (sm *UserManager) GetOneByEmail(ctx context.Context, in *user_proto.UserEma
 }
 
 func (sm *UserManager) GetMany(in *user_proto.ManyUsersOptions, stream user_proto.UserChecker_GetManyServer) error {
-	rows, err := sm.db.Query("SELECT id, username, email, firstname, lastname, avatar, totalgames, totalscore FROM users ORDER BY "+in.OrderBy+" DESC LIMIT 10 OFFSET $1", in.Page*10)
+	rows, err := sm.db.Query(fmt.Sprintf("SELECT id, username, email, firstname, lastname, avatar, totalgames, totalscore FROM users ORDER BY %s DESC LIMIT 10 OFFSET $1", in.OrderBy), in.Page*10) // nolint: gosec
 	if err != nil {
 		sm.logger.Errorw("Internal error",
 			"err", err,
